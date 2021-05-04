@@ -5,6 +5,11 @@
 #
 # -------------------------------------------------- #
 
+"""Modules"""
+import csv
+
+
+# == Class Vertex == #
 class Vertex:
     """Estrutura de Nó para um grafo: um elemento que é o identificador deste nó"""
 
@@ -33,6 +38,7 @@ class Vertex:
         return hash(id(self))  # devolve um inteiro que identifica este vértice como uma chave num dicionário
 
 
+# == Class Edge == #
 class Edge:
     """Estrutura de Aresta para um Grafo: (origem, destino) e seu peso """
 
@@ -62,3 +68,115 @@ class Edge:
 
     def show_edge(self):
         print('(', self._origin, ', ', self._destination, ') com peso', self._weight)
+
+
+# == Class Graph == #
+class Graph:
+    """Representação de um grafo usando mapeamentos de adjacências (associações) com dictionaries"""
+
+    def __init__(self, directed=False):
+        """Cria um grafo vazio (dicionário de _vertices); é orientado se o parâmetro directed tiver o valor True"""
+        self._directed = directed
+        self._number = 0  # quantidade de nós no Grafo
+        self._vertices = {}  # dicionário com chave vértice e valor dicionário de adjacências
+
+    def insert_vertex(self, x):
+        """Insere e devolve um novo vértice com o elemento x"""
+        v = Vertex(x)
+        self._vertices[v] = {}  # inicializa o dicionário de adjacências a vazio
+        return v
+
+    def insert_edge(self, u, v, x):
+        """Cria u e v e insere e devolve uma nova aresta entre u e v com peso x"""
+        e = Edge(u, v, x)
+        self._vertices[u][v] = e  # vai colocar nas adjacências de u
+        self._vertices[v][u] = e  # e nas adjacências de v (para facilitar a procura de todos os arcos incidentes)
+
+    def incident_edges(self, v, outgoing=True):
+        """Gerador: indica todas as arestas (outgoing) incidentes em v
+           Se for um grafo dirigido e outgoing for False, devolve as arestas em incoming
+        """
+        for edge in self._vertices[v].values():  # para todas as arestas relativas a v:
+            if not self._directed:
+                yield edge
+            else:  # senão deve ir procurar em todas as arestas para saber quais entram ou saiem
+                x, y = edge.endpoints()
+                if (outgoing and x == v) or (not outgoing and y == v):
+                    yield edge
+
+    def is_directed(self):
+        """com base na criação original da instância, devolve True se o Grafo é dirigido; False senão """
+        return self._directed  # True se os dois contentores são distintos
+
+    def vertex_count(self):
+        """Devolve a quantidade de vértices no grafo"""
+        return self._number
+
+    def vertices(self):
+        """Devolve um iterável sobre todos os vértices do Grafo"""
+        return self._vertices.keys()
+
+    def edge_count(self):
+        """Devolve a quantidade de arestas do Grafo"""
+        total = sum(len(self._vertices[v]) for v in self._vertices)
+        # for undirected graphs, make sure not to double-count edges
+        return total if self._directed else total // 2
+
+    def edges(self):
+        """Devolve o conjunto de todas as arestas do Grafo"""
+        result = set()  # avoid double-reporting edges in undirected graph
+        for secondary_map in self._vertices.values():
+            result.update(secondary_map.values())  # add edges to resulting set
+        return result
+
+    def get_edge(self, u, v):
+        """Devolve a aresta que liga u e v ou None se não forem adjacentes"""
+        edge = self._vertices[u].get(v)  # returns None se não existir aresta alguma entre u e v
+        if edge != None and self._directed:  # se é dirigido
+            _, x = edge.endpoints  # vai confirmar se é u --> v
+            if x != v:
+                edge = None
+        return edge
+
+    def degree(self, v, outgoing=True):
+        """quantidade de arestas incidentes no vértice v
+        Se for um grafo dirigido, conta apenas as arestas outcoming ou em incoming, de acordo com o valor de outgoing
+        """
+        adj = self._vertices
+        if not self._directed:
+            count = len(adj[v])
+        else:
+            count = 0
+            for edge in adj[v].values():
+                x, y = edge.endpoints()
+                if (outgoing and x == v) or (not outgoing and y == v):
+                    count += 1
+        return count
+
+    def remove_edge(self, u, v):
+        """Remove a aresta entre u e v """
+        if u in self._vertices.keys() and v in self._vertices[u].keys():
+            del self._vertices[u][v]
+            del self._vertices[v][u]
+
+    def remove_vertex(self, v):
+        """remove o vértice v"""
+        # remover todas as arestas de [v]
+        # remover todas as arestas com v noutros vertices
+        # remover o vértice
+        if v in self._vertices.keys():
+            lst = [i for i in self.incident_edges(v)]
+            for i in lst:
+                x, y = i.endpoints()
+                self.remove_edge(x, y)
+            del self._vertices[v]
+        # return v
+
+"""Método de carregamento de dados de um ficheiro csv"""
+def read_csv():
+    """TODO: A implementar"""
+    filename = "Github1.csv"
+    with open(filename, 'r') as file:
+        data = csv.DictReader(file, delimiter=",")
+        for row in data:
+            print(row)
