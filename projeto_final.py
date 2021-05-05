@@ -58,7 +58,9 @@ class Edge:
         return hash((self._origin, self._destination))
 
     def __repr__(self):
-        return '({0},{1}, {2})'.format(self._origin, self._destination, self._weight)
+        if self._weight is not None:
+            return '({0},{1}, {2})'.format(self._origin, self._destination, self._weight)
+        return '({0},{1})'.format(self._origin, self._destination)
 
     def endpoints(self):
         """Return (u,v) tuple for vertices u and v."""
@@ -200,5 +202,3 @@ def github_csv():
             object = Edge(first_col, second_col)
             info.append(object)
     return info
-
-
