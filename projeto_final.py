@@ -8,6 +8,12 @@
 """Modules"""
 import csv
 
+"""
+Implementação do TAD Grafo numa classe em Python, de acordo com a implementação prática nos exercícios do módulo 7
+3.a) (usando dicionários de vértices e de adjacências) ou 
+3.b) (um dicionário de vértices e uma estrutura de lista ligada para as adjacências implementada pelo grupo). 
+Devem usar a interface e as classes Vertex e Edge, como indicado na aula.
+"""
 
 # == Class Vertex == #
 class Vertex:
@@ -42,7 +48,7 @@ class Vertex:
 class Edge:
     """Estrutura de Aresta para um Grafo: (origem, destino) e seu peso """
 
-    def __init__(self, u, v, p):
+    def __init__(self, u, v, p=None):
         self._origin = u
         self._destination = v
         self._weight = p
@@ -51,7 +57,7 @@ class Edge:
         # para associar a aresta a uma chave para um dicionário
         return hash((self._origin, self._destination))
 
-    def __str__(self):
+    def __repr__(self):
         return '({0},{1}, {2})'.format(self._origin, self._destination, self._weight)
 
     def endpoints(self):
@@ -172,11 +178,27 @@ class Graph:
             del self._vertices[v]
         # return v
 
-"""Método de carregamento de dados de um ficheiro csv"""
+"""2. Método de carregamento de dados de um ficheiro csv"""
 def read_csv():
     """TODO: A implementar"""
-    filename = "Github1.csv"
+    filename = ""
     with open(filename, 'r') as file:
         data = csv.DictReader(file, delimiter=",")
         for row in data:
             print(row)
+
+""" 3. Proceda ao Carregamento de dados do ficheiro Github.csv (no e-Learning)"""
+def github_csv():
+    """TODO: A implementar"""
+    info = []
+    filename = "Github1.csv"
+    with open(filename, 'r') as file:
+        data = csv.DictReader(file, delimiter=",")
+        for row in data:
+            first_col = row["follower"]
+            second_col = row["followed"]
+            object = Edge(first_col, second_col)
+            info.append(object)
+    return info
+
+
