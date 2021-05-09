@@ -13,4 +13,4 @@ Projeto final da UC Estrutura de Dados e Algoritmos
 
 * 3. Criado o método github_csv() que carregas os dados do ficheiro Github1.csv. (**Não se sabe se está totalmente de acordo com o enunciado**)
 
-* 5. Criado o método shortest_path_weight() que corresponde à alínea 5 b) (Ainda não está totalmente implementado. Código efetuado de acordo com a página 668 da bibliografia)
+* 5. Criado o método shortest_path_weight() que corresponde à alínea 5 b) (**Ainda não está totalmente implementado. Código efetuado de acordo com a página 668 da bibliografia**)
