@@ -7,6 +7,7 @@
 
 """Modules"""
 import csv
+from heap_priority_queue import AdaptableHeapPriorityQueue
 
 """
 Implementação do TAD Grafo numa classe em Python, de acordo com a implementação prática nos exercícios do módulo 7
@@ -36,7 +37,7 @@ class Vertex:
             return self._element == other.vertice()
         return False
 
-    def __str__(self):
+    def __repr__(self):
         return '{0}'.format(self._element)
 
     def __hash__(self):
@@ -94,7 +95,7 @@ class Graph:
         self._vertices[v] = {}  # inicializa o dicionário de adjacências a vazio
         return v
 
-    def insert_edge(self, u, v, x):
+    def insert_edge(self, u, v, x=None):
         """Cria u e v e insere e devolve uma nova aresta entre u e v com peso x"""
         e = Edge(u, v, x)
         self._vertices[u][v] = e  # vai colocar nas adjacências de u
@@ -113,7 +114,7 @@ class Graph:
                     yield edge
 
     def is_directed(self):
-        """com base na criação original da instância, devolve True se o Grafo é dirigido; False senão """
+        """com base na criação original da instância, devolve True se o Grafo é dirigido; False caso contrário"""
         return self._directed  # True se os dois contentores são distintos
 
     def vertex_count(self):
@@ -180,25 +181,92 @@ class Graph:
             del self._vertices[v]
         # return v
 
-"""2. Método de carregamento de dados de um ficheiro csv"""
+    def printG(self):
+        '''Mostra o grafo por linhas'''
+        print('Grafo orientado:', self._directed)
+        for v in self.vertices():
+            print('\nvertex ', v, ' grau_in: ', self.degree(v,False), end=' ')
+            if self._directed:
+                print('grau_out: ', self.degree(v, False))
+            for i in self.incident_edges(v):
+                print(' ', i, end=' ')
+            if self._directed:
+                for i in self.incident_edges(v, False):
+                    print(' ', i, end=' ')
+
+"""2. Método de carregamento de dados de um ficheiro csv que obedeça ao seguinte formato:
+    i) por linha existem 3 valores de dados - o 1.º e o 2.º indicam nomes de vértices e o 3.º um peso. 
+    ii) A 1.ª linha do ficheiro indica o nome das colunas.
+    Nota importante: caso não exista 3ª coluna, devem assumir que o grafo não é pesado e lidar com essa situação sem erro
+"""
 def read_csv():
-    """TODO: A implementar"""
-    filename = ""
-    with open(filename, 'r') as file:
-        data = csv.DictReader(file, delimiter=",")
-        for row in data:
+    """TODO: Dúvida colocada ao professor. A aguardar resposta"""
+    with open('ficheiro.csv', newline='') as csv_file:    # abrir o ficheiro CSV
+        reader = csv.reader(csv_file, delimiter=",")    # ler os dados no ficheiro CSV
+        for row in reader:
             print(row)
 
-""" 3. Proceda ao Carregamento de dados do ficheiro Github.csv (no e-Learning)"""
+""" 3. Proceda ao Carregamento de dados do ficheiro Github.csv (no e-Learning) """
 def github_csv():
+    data = []
+    with open('Github1.csv', mode='r') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for row in csv_reader:
+            data.append(row)
+    return data
+
+""" 5. Implementação de métodos para determinar caminhos mais curtos num grafo """
+
+"""(a) sem usar os pesos nas arestas)"""
+
+""" (b) usando os pesos nas arestas"""
+
+def shortest_path_weight(g, src):
     """TODO: A implementar"""
-    info = []
-    filename = "Github1.csv"
-    with open(filename, 'r') as file:
-        data = csv.DictReader(file, delimiter=",")
-        for row in data:
-            first_col = row["follower"]
-            second_col = row["followed"]
-            object = Edge(first_col, second_col)
-            info.append(object)
-    return info
+    d = {}  # d[v] is upper bound from s to v
+    cloud = {}  # map reachable v to its d[v] value
+    pq = AdaptableHeapPriorityQueue()  # vertex v will have key d[v]
+    pqlocator = {}  # map from vertex to its pq locator
+
+    # for each vertex v of the graph, add an entry to the priority queue, with
+    # the source having distance 0 and all others having infinite distance
+    for v in g.vertices():
+        if v is src:
+            d[v] = 0
+        else:
+            d[v] = float('inf')  # syntax for positive infinity
+        pqlocator[v] = pq.add(d[v], v)  # save locator for future updates
+
+    while not pq.is_empty():
+        key, u = pq.remove_min()
+        cloud[u] = key
+        del pqlocator[u]
+        for e in g.incident_edges(u):
+            v = e.opposite(u)
+            if v not in cloud:
+                wgt = e.cost()
+                if d[u] + wgt < d[v]:
+                    d[v] = d[u] + wgt
+                    pq.update(pqlocator[v], d[v], v)
+    return cloud
+
+
+# Teste de métodos do Grafo
+if __name__ == "__main__":
+
+    import random as rnd
+
+    rnd.seed(10)  # para replicação
+    g = Graph()
+    verts = []  # lista auxiliar para guardar os vértices inseridos para construção das arestas
+    lst = [i for i in range(0, 10)]
+    for i in lst:
+        verts.append(g.insert_vertex(i))  # inserção dos 10 vertices no grafo V = {0, 1, ..., 9} e na lista de vertices
+
+    for i in range(1, 20):                      # criação de 20 arestas a partir dos vértices inseridos
+        u, v = rnd.sample(lst, k=2)             # gerar aleatoriamente uma aresta
+        x = rnd.randint(1, 10)                  # com peso inteiro aleatório entre 0 e 10
+        g.insert_edge(verts[u], verts[v], x)    # inserção desta aresta
+
+    # Teste do método shortest_path_weight()
+    print(shortest_path_weight(g, verts))
