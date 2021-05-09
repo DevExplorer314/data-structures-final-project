@@ -11,4 +11,4 @@ Projeto final da UC Estrutura de Dados e Algoritmos
 
 * 2. Colocar dúvida ao professor se de facto será necessário criar dois métodos para ler CSV files.
 
-* 3. Criado o método github_csv() que carregas os dados do ficheiro Github1.csv. (**Não está totalmente de acordo com o enunciado**)
+* 3. Criado o método github_csv() que carregas os dados do ficheiro Github1.csv. (**Não se sabe se está totalmente de acordo com o enunciado**)
