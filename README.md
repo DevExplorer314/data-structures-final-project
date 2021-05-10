@@ -28,3 +28,7 @@ https://www.geeksforgeeks.org/building-an-undirected-graph-and-finding-shortest-
 https://www.cantorsparadise.com/dijkstras-shortest-path-algorithm-in-python-d955744c7064
 
 https://stackoverflow.com/questions/22897209/dijkstras-algorithm-in-python
+
+* Implementar o código para a 5 (b), usando o seguinte vídeo como referência:
+
+https://www.youtube.com/watch?v=Ub4-nG09PFw
