@@ -21,7 +21,7 @@ https://towardsdatascience.com/a-self-learners-guide-to-shortest-path-algorithms
 **10/05/2021**
 
 * 5. Criado o método shortest_path() que corresponde à alínea 5 b). **Está a funcionar!**
-*   Implementação efetuada através dos seguintes links:
+* Implementação efetuada através dos seguintes links:
 
 https://www.geeksforgeeks.org/building-an-undirected-graph-and-finding-shortest-path-using-dictionaries-in-python/ (**Este foi o utilizado**)
 
