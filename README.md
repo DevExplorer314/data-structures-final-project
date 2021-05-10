@@ -17,3 +17,14 @@ Projeto final da UC Estrutura de Dados e Algoritmos
 
 **Consultar o link abaixo para ajudar na questão 5**
 https://towardsdatascience.com/a-self-learners-guide-to-shortest-path-algorithms-with-implementations-in-python-a084f60f43dc
+
+**10/05/2021**
+
+* 5. Criado o método shortest_path() que corresponde à alínea 5 b). **Está a funcionar!**
+* Implementação efetuada através dos seguintes links:
+
+https://www.geeksforgeeks.org/building-an-undirected-graph-and-finding-shortest-path-using-dictionaries-in-python/ (**Este foi o utilizado**)
+
+https://www.cantorsparadise.com/dijkstras-shortest-path-algorithm-in-python-d955744c7064
+
+https://stackoverflow.com/questions/22897209/dijkstras-algorithm-in-python
