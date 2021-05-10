@@ -7,7 +7,6 @@
 
 """Modules"""
 import csv
-from heap_priority_queue import AdaptableHeapPriorityQueue
 
 """
 Implementação do TAD Grafo numa classe em Python, de acordo com a implementação prática nos exercícios do módulo 7
@@ -49,6 +48,8 @@ class Vertex:
 class Edge:
     """Estrutura de Aresta para um Grafo: (origem, destino) e seu peso """
 
+    __slots__ = '_origin', '_destination', '_weight'
+
     def __init__(self, u, v, p=None):
         self._origin = u
         self._destination = v
@@ -59,9 +60,9 @@ class Edge:
         return hash((self._origin, self._destination))
 
     def __repr__(self):
-        if self._weight is not None:
-            return '({0},{1}, {2})'.format(self._origin, self._destination, self._weight)
-        return '({0},{1})'.format(self._origin, self._destination)
+        if self._weight is None:
+            return '({0}, {1})'.format(self._origin, self._destination)
+        return '({0}, {1}, {2})'.format(self._origin, self._destination, self._weight)
 
     def endpoints(self):
         """Return (u,v) tuple for vertices u and v."""
@@ -81,118 +82,97 @@ class Edge:
 
 # == Class Graph == #
 class Graph:
-    """Representação de um grafo usando mapeamentos de adjacências (associações) com dictionaries"""
 
     def __init__(self, directed=False):
-        """Cria um grafo vazio (dicionário de _vertices); é orientado se o parâmetro directed tiver o valor True"""
-        self._directed = directed
-        self._number = 0  # quantidade de nós no Grafo
-        self._vertices = {}  # dicionário com chave vértice e valor dicionário de adjacências
-
-    def insert_vertex(self, x):
-        """Insere e devolve um novo vértice com o elemento x"""
-        v = Vertex(x)
-        self._vertices[v] = {}  # inicializa o dicionário de adjacências a vazio
-        return v
-
-    def insert_edge(self, u, v, x=None):
-        """Cria u e v e insere e devolve uma nova aresta entre u e v com peso x"""
-        e = Edge(u, v, x)
-        self._vertices[u][v] = e  # vai colocar nas adjacências de u
-        self._vertices[v][u] = e  # e nas adjacências de v (para facilitar a procura de todos os arcos incidentes)
-
-    def incident_edges(self, v, outgoing=True):
-        """Gerador: indica todas as arestas (outgoing) incidentes em v
-           Se for um grafo dirigido e outgoing for False, devolve as arestas em incoming
         """
-        for edge in self._vertices[v].values():  # para todas as arestas relativas a v:
-            if not self._directed:
-                yield edge
-            else:  # senão deve ir procurar em todas as arestas para saber quais entram ou saiem
-                x, y = edge.endpoints()
-                if (outgoing and x == v) or (not outgoing and y == v):
-                    yield edge
+        Cria um grafo vazio (por omissão será não dirigido e usa o contentor vertices)
+        O Grafo é orientado se o parâmetro directed tiver o valor True
+        """
+        self._outgoing = {}
+        # o dicionário seguinte apenas é criado se o grafo for orientado; senão usa-se um alias para o 1o.
+        self._incoming = {} if directed else self._outgoing
+        self.weights = {}
 
     def is_directed(self):
-        """com base na criação original da instância, devolve True se o Grafo é dirigido; False caso contrário"""
-        return self._directed  # True se os dois contentores são distintos
+        """com base na criação original da instância, devolve True se o Grafo é dirigido; False senão """
+        return self._incoming is not self._outgoing  # True se os dois contentores são distintos
 
     def vertex_count(self):
         """Devolve a quantidade de vértices no grafo"""
-        return self._number
+        return len(self._outgoing)
 
     def vertices(self):
-        """Devolve um iterável sobre todos os vértices do Grafo"""
-        return self._vertices.keys()
+        """Devolve um iterador de todos os vértices do Grafo"""
+        return self._outgoing.keys()
 
     def edge_count(self):
         """Devolve a quantidade de arestas do Grafo"""
-        total = sum(len(self._vertices[v]) for v in self._vertices)
-        # for undirected graphs, make sure not to double-count edges
-        return total if self._directed else total // 2
+        # soma as arestas em outgoing para cada vértice
+        total = sum(len(self._outgoing[v]) for v in self._outgoing)
+        # se é não orientado, há duplicação de arestas em cada vértice extremo
+        return total if self.is_directed() else total // 2
 
     def edges(self):
         """Devolve o conjunto de todas as arestas do Grafo"""
-        result = set()  # avoid double-reporting edges in undirected graph
-        for secondary_map in self._vertices.values():
-            result.update(secondary_map.values())  # add edges to resulting set
+        result = set()  # set pois, se é não orientado, há duplicação de arestas em cada vértice extremo
+        # pelo que deve guardar apenas uma ocorrência de cada uma
+        for secondary_map in self._outgoing.values():
+            result.update(secondary_map.values())
         return result
 
     def get_edge(self, u, v):
-        """Devolve a aresta que liga u e v ou None se não forem adjacentes"""
-        edge = self._vertices[u].get(v)  # returns None se não existir aresta alguma entre u e v
-        if edge != None and self._directed:  # se é dirigido
-            _, x = edge.endpoints  # vai confirmar se é u --> v
-            if x != v:
-                edge = None
-        return edge
+        """Devolve a aresta que liga u e v (ou None se não forem adjacentes)"""
+        return self._outgoing[u].get(v)  # get devolve None se não encontrar
 
     def degree(self, v, outgoing=True):
-        """quantidade de arestas incidentes no vértice v
-        Se for um grafo dirigido, conta apenas as arestas outcoming ou em incoming, de acordo com o valor de outgoing
         """
-        adj = self._vertices
-        if not self._directed:
-            count = len(adj[v])
-        else:
-            count = 0
-            for edge in adj[v].values():
-                x, y = edge.endpoints()
-                if (outgoing and x == v) or (not outgoing and y == v):
-                    count += 1
-        return count
+        Quantidade de arestas (em outgoing) incidentes no vértice v
+        Se for um grafo dirigido, e outgoing for False, conta as arestas em incoming
+        """
+        adj = self._outgoing if outgoing else self._incoming
+        return len(adj[v])
+
+    def incident_edges(self, v, outgoing=True):
+        """
+        Devolve todas as arestas (outgoing) incidentes em v
+        Se for um grafo dirigido, e outgoing for False, conta as arestas em incoming
+        """
+        adj = self._outgoing if outgoing else self._incoming
+        for edge in adj[v].values():
+            yield edge
+
+    def insert_vertex(self, v):
+        """Insere e devolve um novo vértice com o elemento x"""
+        self._outgoing[v] = {}
+        if self.is_directed():
+            # se dirigido, precisa ainda da "lista" de vértices a chegar
+            self._incoming[v] = {}
+        return v
+
+    def insert_edge(self, u, v, x=None):
+        """Insere e devolve uma nova aresta entre u e v com peso x"""
+        e = Edge(u, v, x)
+        self._outgoing[u][v] = e
+        self._incoming[v][u] = e
 
     def remove_edge(self, u, v):
         """Remove a aresta entre u e v """
-        if u in self._vertices.keys() and v in self._vertices[u].keys():
-            del self._vertices[u][v]
-            del self._vertices[v][u]
+        del self._outgoing[u][v]
+        del self._incoming[v][u]
 
     def remove_vertex(self, v):
         """remove o vértice v"""
-        # remover todas as arestas de [v]
-        # remover todas as arestas com v noutros vertices
-        # remover o vértice
-        if v in self._vertices.keys():
-            lst = [i for i in self.incident_edges(v)]
-            for i in lst:
-                x, y = i.endpoints()
-                self.remove_edge(x, y)
-            del self._vertices[v]
-        # return v
-
-    def printG(self):
-        '''Mostra o grafo por linhas'''
-        print('Grafo orientado:', self._directed)
-        for v in self.vertices():
-            print('\nvertex ', v, ' grau_in: ', self.degree(v,False), end=' ')
-            if self._directed:
-                print('grau_out: ', self.degree(v, False))
-            for i in self.incident_edges(v):
-                print(' ', i, end=' ')
-            if self._directed:
-                for i in self.incident_edges(v, False):
-                    print(' ', i, end=' ')
+        # remover todas as arestas de outgoing [v]
+        # remover todas as arestas de incoming [v]
+        # remover o vértice de x
+        for i in self.incident_edges(v):
+            self.remove_edge(v, i)
+        del self._outgoing[v]
+        if self.is_directed():
+            for i in self.incident_edges(v, False):
+                self.remove_edge(i, v)
+            del self._incoming[v]
+        return v
 
 """2. Método de carregamento de dados de um ficheiro csv que obedeça ao seguinte formato:
     i) por linha existem 3 valores de dados - o 1.º e o 2.º indicam nomes de vértices e o 3.º um peso. 
@@ -201,8 +181,9 @@ class Graph:
 """
 def read_csv():
     """TODO: Dúvida colocada ao professor. A aguardar resposta"""
-    with open('ficheiro.csv', newline='') as csv_file:    # abrir o ficheiro CSV
+    with open('Github1.csv', newline='') as csv_file:    # abrir o ficheiro CSV
         reader = csv.reader(csv_file, delimiter=",")    # ler os dados no ficheiro CSV
+        next(reader)        # ignora a primeira linha do ficheiro (nome das colunas)
         for row in reader:
             print(row)
 
@@ -212,61 +193,133 @@ def github_csv():
     with open('Github1.csv', mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
-            data.append(row)
+            object = Edge(row["follower"], row["followed"])
+            data.append(object)
     return data
 
 """ 5. Implementação de métodos para determinar caminhos mais curtos num grafo """
 
 """(a) sem usar os pesos nas arestas)"""
+def shortest_path(graph, start, goal):
+    explored = []
+
+    # Queue for traversing the
+    # graph in the BFS
+    queue = [[start]]
+
+    # If the desired node is
+    # reached
+    if start == goal:
+        print("Same Node")
+        return
+
+    # Loop to traverse the graph
+    # with the help of the queue
+    while queue:
+        path = queue.pop(0)
+        node = path[-1]
+
+        # Condition to check if the
+        # current node is not visited
+        if node not in explored:
+            neighbours = graph[node]
+
+            # Loop to iterate over the
+            # neighbours of the node
+            for neighbour in neighbours:
+                new_path = list(path)
+                new_path.append(neighbour)
+                queue.append(new_path)
+
+                # Condition to check if the
+                # neighbour node is the goal
+                if neighbour == goal:
+                    print("Shortest path = ", *new_path)
+                    return
+            explored.append(node)
+
+    # Condition when the nodes
+    # are not connected
+    print("So sorry, but a connecting" \
+          "path doesn't exist :(")
+    return
+
 
 """ (b) usando os pesos nas arestas"""
 
-def shortest_path_weight(g, src):
-    """TODO: A implementar"""
-    d = {}  # d[v] is upper bound from s to v
-    cloud = {}  # map reachable v to its d[v] value
-    pq = AdaptableHeapPriorityQueue()  # vertex v will have key d[v]
-    pqlocator = {}  # map from vertex to its pq locator
 
-    # for each vertex v of the graph, add an entry to the priority queue, with
-    # the source having distance 0 and all others having infinite distance
-    for v in g.vertices():
-        if v is src:
-            d[v] = 0
-        else:
-            d[v] = float('inf')  # syntax for positive infinity
-        pqlocator[v] = pq.add(d[v], v)  # save locator for future updates
+def dijsktra(graph, initial, end):
+    # the shortest paths is a dict of nodes
+    # whose value is a tuple of (previous node, weight)
+    shortest_paths = {initial: (None, 0)}
+    current_node = initial
+    visited = set()
 
-    while not pq.is_empty():
-        key, u = pq.remove_min()
-        cloud[u] = key
-        del pqlocator[u]
-        for e in g.incident_edges(u):
-            v = e.opposite(u)
-            if v not in cloud:
-                wgt = e.cost()
-                if d[u] + wgt < d[v]:
-                    d[v] = d[u] + wgt
-                    pq.update(pqlocator[v], d[v], v)
-    return cloud
+    while current_node != end:
+        visited.add(current_node)
+        destinations = graph.edges[current_node]
+        weight_to_current_node = shortest_paths[current_node][1]
 
+        for next_node in destinations:
+            weight = graph.weights[(current_node, next_node)] + weight_to_current_node
+            if next_node not in shortest_paths:
+                shortest_paths[next_node] = (current_node, weight)
+            else:
+                current_shortest_weight = shortest_paths[next_node][1]
+                if current_shortest_weight > weight:
+                    shortest_paths[next_node] = (current_node, weight)
 
-# Teste de métodos do Grafo
+        next_destinations = {node: shortest_paths[node] for node in shortest_paths if node not in visited}
+        if not next_destinations:
+            return "Route Not Possible"
+        # the next node is the destination with the lowest weight
+        current_node = min(next_destinations, key=lambda k: next_destinations[k][1])
+
+    # determing the shortest path
+    path = []
+    while current_node is not None:
+        path.append(current_node)
+        next_node = shortest_paths[current_node][0]
+        current_node = next_node
+    # Reverse path
+    path = path[::-1]
+    return path
+
 if __name__ == "__main__":
 
-    import random as rnd
-
-    rnd.seed(10)  # para replicação
     g = Graph()
-    verts = []  # lista auxiliar para guardar os vértices inseridos para construção das arestas
-    lst = [i for i in range(0, 10)]
-    for i in lst:
-        verts.append(g.insert_vertex(i))  # inserção dos 10 vertices no grafo V = {0, 1, ..., 9} e na lista de vertices
 
-    for i in range(1, 20):                      # criação de 20 arestas a partir dos vértices inseridos
-        u, v = rnd.sample(lst, k=2)             # gerar aleatoriamente uma aresta
-        x = rnd.randint(1, 10)                  # com peso inteiro aleatório entre 0 e 10
-        g.insert_edge(verts[u], verts[v], x)    # inserção desta aresta
+    ## Inserção de vértices
+    g.insert_vertex('a')
+    g.insert_vertex('b')
+    g.insert_vertex('c')
+    g.insert_vertex('d')
+    g.insert_vertex('e')
+    g.insert_vertex('f')
 
-    # Teste do método shortest_path_weight()
-    print(shortest_path_weight(g, verts))
+    ## Inserção de arestas
+    g.insert_edge('a', 'b', 7)
+    g.insert_edge('a', 'c', 9)
+    g.insert_edge('a', 'f', 14)
+    g.insert_edge('b', 'c', 10)
+    g.insert_edge('b', 'd', 15)
+    g.insert_edge('c', 'd', 11)
+    g.insert_edge('c', 'f', 2)
+    g.insert_edge('d', 'e', 6)
+    g.insert_edge('e', 'f', 9)
+
+    ## Grafo usando dicionários
+    graph = {'A': ['B', 'E', 'C'],
+             'B': ['A', 'D', 'E'],
+             'C': ['A', 'F', 'G'],
+             'D': ['B', 'E'],
+             'E': ['A', 'B', 'D'],
+             'F': ['C'],
+             'G': ['C']}
+
+    ## Shortest Paths Function Call
+    shortest_path(graph, 'A', 'D')
+    shortest_path(graph, 'A', 'G')
+
+    ## Dijkstra method
+    dijsktra(graph, 'A', 'D')
