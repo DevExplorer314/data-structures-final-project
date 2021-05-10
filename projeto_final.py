@@ -91,7 +91,6 @@ class Graph:
         self._outgoing = {}
         # o dicionário seguinte apenas é criado se o grafo for orientado; senão usa-se um alias para o 1o.
         self._incoming = {} if directed else self._outgoing
-        self.weights = {}
 
     def is_directed(self):
         """com base na criação original da instância, devolve True se o Grafo é dirigido; False senão """
@@ -246,44 +245,11 @@ def shortest_path(graph, start, goal):
 
 
 """ (b) usando os pesos nas arestas"""
-
-
-def dijsktra(graph, initial, end):
-    # the shortest paths is a dict of nodes
-    # whose value is a tuple of (previous node, weight)
-    shortest_paths = {initial: (None, 0)}
-    current_node = initial
-    visited = set()
-
-    while current_node != end:
-        visited.add(current_node)
-        destinations = graph.edges[current_node]
-        weight_to_current_node = shortest_paths[current_node][1]
-
-        for next_node in destinations:
-            weight = graph.weights[(current_node, next_node)] + weight_to_current_node
-            if next_node not in shortest_paths:
-                shortest_paths[next_node] = (current_node, weight)
-            else:
-                current_shortest_weight = shortest_paths[next_node][1]
-                if current_shortest_weight > weight:
-                    shortest_paths[next_node] = (current_node, weight)
-
-        next_destinations = {node: shortest_paths[node] for node in shortest_paths if node not in visited}
-        if not next_destinations:
-            return "Route Not Possible"
-        # the next node is the destination with the lowest weight
-        current_node = min(next_destinations, key=lambda k: next_destinations[k][1])
-
-    # determing the shortest path
-    path = []
-    while current_node is not None:
-        path.append(current_node)
-        next_node = shortest_paths[current_node][0]
-        current_node = next_node
-    # Reverse path
-    path = path[::-1]
-    return path
+def shortest_path_weight():
+    '''TODO: Implementar o método utilizado no link abaixo.
+    Link: https://www.youtube.com/watch?v=Ub4-nG09PFw
+    '''
+    pass
 
 if __name__ == "__main__":
 
@@ -317,9 +283,8 @@ if __name__ == "__main__":
              'F': ['C'],
              'G': ['C']}
 
-    ## Shortest Paths Function Call
+    ## Shortest path sem usar os pesos nas arestas
     shortest_path(graph, 'A', 'D')
     shortest_path(graph, 'A', 'G')
 
-    ## Dijkstra method
-    dijsktra(graph, 'A', 'D')
+    ## Shortest path usando os pesos nas arestas
