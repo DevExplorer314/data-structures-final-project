@@ -202,43 +202,40 @@ def github_csv():
 def shortest_path(graph, start, goal):
     explored = []
 
-    # Queue for traversing the
-    # graph in the BFS
+    # Fila de espera para atravessar
+    # o grafo na BFS (breadth-first search)
     queue = [[start]]
 
-    # If the desired node is
-    # reached
+    # Se o nó desejado for alcançado
     if start == goal:
         print("Same Node")
         return
 
-    # Loop to traverse the graph
-    # with the help of the queue
+    # Loop para atravessar o grafo
+    # com a ajuda da fila de espera
     while queue:
         path = queue.pop(0)
         node = path[-1]
 
-        # Condition to check if the
-        # current node is not visited
+        # Condição para verificar se
+        # o nó atual não foi visitado
         if node not in explored:
             neighbours = graph[node]
 
-            # Loop to iterate over the
-            # neighbours of the node
+            # Loop para iterar sobre os nós vizinhos do nó
             for neighbour in neighbours:
                 new_path = list(path)
                 new_path.append(neighbour)
                 queue.append(new_path)
 
-                # Condition to check if the
-                # neighbour node is the goal
+                # Condição para verificar se
+                # o nó vizinho é o objetivo
                 if neighbour == goal:
                     print("Shortest path = ", *new_path)
                     return
             explored.append(node)
 
-    # Condition when the nodes
-    # are not connected
+    # Condição para quando os nós não estão interligados
     print("So sorry, but a connecting" \
           "path doesn't exist :(")
     return
@@ -283,8 +280,8 @@ if __name__ == "__main__":
              'F': ['C'],
              'G': ['C']}
 
-    ## Shortest path sem usar os pesos nas arestas
+    ## Teste da função shortest_path(), sem usar os pesos nas arestas
     shortest_path(graph, 'A', 'D')
     shortest_path(graph, 'A', 'G')
 
-    ## Shortest path usando os pesos nas arestas
+    ## Teste da função shortest_path_weight(), usando os pesos nas arestas
