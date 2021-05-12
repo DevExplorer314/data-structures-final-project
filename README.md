@@ -32,3 +32,13 @@ https://stackoverflow.com/questions/22897209/dijkstras-algorithm-in-python
 * Implementar o código para a 5 (b), usando o seguinte vídeo como referência:
 
 https://www.youtube.com/watch?v=Ub4-nG09PFw
+
+**12/05/2021**
+
+* Implementado o método **dijkstra(graph, start, goal)** que corresponde à alínea 5 b). **Está a funcionar!**
+* Criado o método **build_graph()** para criação do grafo **Ainda está a ser implementado**
+
+**Next Steps:**
+
+* Desenvolver o código para os métodos **degree_centrality()** e **closeness_centrality()** referentes à alínea 6
+
