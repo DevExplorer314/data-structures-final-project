@@ -173,9 +173,6 @@ class Graph:
             del self._incoming[v]
         return v
 
-    def get_weight(self):
-        return
-
 """2. Método de carregamento de dados de um ficheiro csv que obedeça ao seguinte formato:
     i) por linha existem 3 valores de dados - o 1.º e o 2.º indicam nomes de vértices e o 3.º um peso. 
     ii) A 1.ª linha do ficheiro indica o nome das colunas.
@@ -200,7 +197,6 @@ def github_csv():
             data.append(Vertex(follower))
             data.append(Vertex(followed))
     return data
-
 
 def build_graph():
     graph_vertex = github_csv()
@@ -258,8 +254,6 @@ def shortest_path(graph, start, goal):
 
 
 """ (b) usando os pesos nas arestas"""
-graph = {'a': {'b': 10, 'c': 3}, 'b': {'c': 1, 'd': 2}, 'c': {'b': 4, 'd': 8, 'e': 2}, 'd': {'e': 7}, 'e': {'d': 9}}
-
 def dijkstra(graph, start, goal):
     shortest_distance = {}
     predecessor = {}
@@ -297,11 +291,9 @@ def dijkstra(graph, start, goal):
         print('Shortest distance is ' + str(shortest_distance[goal]))
         print('And the path is ' + str(path))
 
-dijkstra(graph, 'a', 'b')
-
-
-
-
+""" 6. Implementação, pelo menos, das medidas de centralidade: 
+       centralidade de grau (degree centrality) e 
+       centralidade de proximidade (closeness). """
 
 
 
@@ -337,8 +329,14 @@ if __name__ == "__main__":
              'F': ['C'],
              'G': ['C']}
 
+    graph2 = {'a': {'b': 10, 'c': 3}, 'b': {'c': 1, 'd': 2}, 'c': {'b': 4, 'd': 8, 'e': 2}, 'd': {'e': 7}, 'e': {'d': 9}}
+
     ## Teste da função shortest_path(), sem usar os pesos nas arestas
     shortest_path(graph, 'A', 'D')
     shortest_path(graph, 'A', 'G')
 
     ## Teste da função shortest_path_weight(), usando os pesos nas arestas
+    dijkstra(graph2, 'a', 'b')
+
+    ## Calculando o grau de centralidade do grafo
+
