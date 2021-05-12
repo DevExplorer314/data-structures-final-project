@@ -173,6 +173,23 @@ class Graph:
             del self._incoming[v]
         return v
 
+    def printG(self):
+        '''Mostra o grafo por linhas'''
+        print('Grafo orientado:', self.is_directed())
+        '''Mostra o número de vertices'''
+        print("Número de Vertices: {}".format(g.vertex_count()))
+        '''Mostra o número de arestas'''
+        print("Número de Arestas: {}".format(g.edge_count()))
+        for v in self.vertices():
+            print('\nvertex ', v, ' grau_in: ', self.degree(v,False), end=' ')
+            if self.is_directed():
+                print('grau_out: ', self.degree(v, False))
+            for i in self.incident_edges(v):
+                print(' ', i, end=' ')
+            if self.is_directed():
+                for i in self.incident_edges(v, False):
+                    print(' ', i, end=' ')
+
 """2. Método de carregamento de dados de um ficheiro csv que obedeça ao seguinte formato:
     i) por linha existem 3 valores de dados - o 1.º e o 2.º indicam nomes de vértices e o 3.º um peso. 
     ii) A 1.ª linha do ficheiro indica o nome das colunas.
@@ -243,7 +260,7 @@ def shortest_path(graph, start, goal):
                 # Condição para verificar se
                 # o nó vizinho é o objetivo
                 if neighbour == goal:
-                    print("Shortest path = ", *new_path)
+                    print("Caminho mais curto de {} para {} = {} ".format(start, goal, new_path))
                     return
             explored.append(node)
 
@@ -295,7 +312,15 @@ def dijkstra(graph, start, goal):
        centralidade de grau (degree centrality) e 
        centralidade de proximidade (closeness). """
 
+# centralidade de grau
+def degree_centrality():
+    """TODO: Implementar"""
+    pass
 
+# centralidade de proximidade
+def closeness_centrality():
+    """TODO: Implementar"""
+    pass
 
 if __name__ == "__main__":
 
@@ -320,6 +345,9 @@ if __name__ == "__main__":
     g.insert_edge('d', 'e', 6)
     g.insert_edge('e', 'f', 9)
 
+    g.printG()
+    print('\n')
+
     ## Grafo usando dicionários
     graph = {'A': ['B', 'E', 'C'],
              'B': ['A', 'D', 'E'],
@@ -332,11 +360,14 @@ if __name__ == "__main__":
     graph2 = {'a': {'b': 10, 'c': 3}, 'b': {'c': 1, 'd': 2}, 'c': {'b': 4, 'd': 8, 'e': 2}, 'd': {'e': 7}, 'e': {'d': 9}}
 
     ## Teste da função shortest_path(), sem usar os pesos nas arestas
+    print("=== Sem usar os pesos nas arestas === ")
     shortest_path(graph, 'A', 'D')
     shortest_path(graph, 'A', 'G')
 
+    print('\n')
+
     ## Teste da função shortest_path_weight(), usando os pesos nas arestas
+    print("=== Usando os pesos nas arestas ===")
     dijkstra(graph2, 'a', 'b')
 
     ## Calculando o grau de centralidade do grafo
-
