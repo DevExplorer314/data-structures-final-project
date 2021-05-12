@@ -195,9 +195,22 @@ def github_csv():
     with open('Github1.csv', mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
-            object = Edge(row["follower"], row["followed"])
-            data.append(object)
+            follower = Vertex(row["follower"])
+            followed = Vertex(row["followed"])
+            data.append(Vertex(follower))
+            data.append(Vertex(followed))
     return data
+
+
+def build_graph():
+    graph_vertex = github_csv()
+    graph = Graph(True)
+    for vertex in graph_vertex:
+        graph.insert_vertex(vertex)
+    print(graph.vertex_count())
+    print(graph.is_directed())
+
+    return graph
 
 """ 5. Implementação de métodos para determinar caminhos mais curtos num grafo """
 
