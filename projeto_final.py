@@ -196,9 +196,23 @@ class Graph:
             del self._vertices[v]
         #return v
 
+    '''
     def __repr__(self):
         """TODO: Implementar"""
         pass
+    '''
+
+    def __repr__(self):
+        """TODO: A Implementar"""
+        res = "nodes: "
+        '''
+        for node in self.vertices():
+            res += str(node) + " "
+        res += "\nedges: "
+        '''
+        for edge in self.edges():
+            res += str(edge) + " "
+        return res
 
     def printG(self):
         '''Mostra o grafo por linhas'''
@@ -212,7 +226,6 @@ class Graph:
             if self._directed:
                 for i in self.incident_edges(v, False):
                     print(' ', i, end=' ')
-
 
 
 """2. Método de carregamento de dados de um ficheiro csv que obedeça ao seguinte formato:
