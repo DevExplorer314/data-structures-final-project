@@ -216,42 +216,28 @@ class Graph:
     ii) A 1.ª linha do ficheiro indica o nome das colunas.
     Nota importante: caso não exista 3ª coluna, devem assumir que o grafo não é pesado e lidar com essa situação sem erro
 """
-def read_csv():
-    """TODO: Dúvida colocada ao professor. A aguardar resposta"""
-    with open('Github1.csv', newline='') as csv_file:    # abrir o ficheiro CSV
-        reader = csv.reader(csv_file, delimiter=",")    # ler os dados no ficheiro CSV
-        next(reader)        # ignora a primeira linha do ficheiro (nome das colunas)
-        for row in reader:
-            print(row)
 
 """ 3. Proceda ao Carregamento de dados do ficheiro Github.csv (no e-Learning) """
-def github_csv():
-    lista = []
-    with open('Github1.csv', 'r') as csv_file:
-        data = csv.DictReader(csv_file)
+def read_csv(filename):
+
+    graph = Graph()
+    with open(filename, 'r') as csv_file:
+        data = csv.reader(csv_file)
         next(data)
-        for row in data:
-            lista.append(row)
-        rel_dict = {}
-        for d in lista:
-            if d["follower"] in rel_dict.keys():
-                rel_dict[d['follower']].append(d['followed'])
-            else:
-                rel_dict[d['follower']] = [d['followed']]
-        return rel_dict
 
+        for linha in data:
+            id_origem = linha[0]
+            id_destino = linha[1]
+            peso = linha[2] if len(linha) > 2 else 1 # None
 
-def build_graph():
-    graph = Graph(True)
-    git = github_csv()
-    for k,v in git.items():
-        k_vertex = graph.insert_vertex(k)
-        for v_item in v:
-            v_item_vertex = graph.insert_vertex(v_item)
-            graph.insert_edge(k_vertex,v_item_vertex)
-    graph.printG()
-    return graph
+            v_origem = graph.insert_vertex(id_origem)
+            v_destino = graph.insert_vertex(id_destino)
 
+            graph.insert_edge(v_origem, v_destino, peso)
+
+        return graph
+
+read_csv("Github1.csv")
 
 """ 5. Implementação de métodos para determinar caminhos mais curtos num grafo """
 
@@ -282,10 +268,49 @@ def shortest_path(graph, start, goal):
                     return
             explored.append(node)
 
-    print("So sorry, but a connecting" \
-          "path doesn't exist :(")
+    print("So sorry, but a connecting path doesn't exist :(")
     return
 
+""" (b) usando os pesos nas arestas"""
+def dijkstra(graph, start, goal):
+    shortest_distance = {}
+    predecessor = {}
+    unseenNodes = graph
+    infinity = 9999999
+    path = []
+    for node in unseenNodes:
+        shortest_distance[node] = infinity
+    shortest_distance[start] = 0
+
+    while unseenNodes:
+        minNode = None
+        for node in unseenNodes:
+            if minNode is None:
+                minNode = node
+            elif shortest_distance[node] < shortest_distance[minNode]:
+                minNode = node
+
+        for childNode, weight in graph[minNode].items():
+            if weight + shortest_distance[minNode] < shortest_distance[childNode]:
+                shortest_distance[childNode] = weight + shortest_distance[minNode]
+                predecessor[childNode] = minNode
+        unseenNodes.pop(minNode)
+
+    currentNode = goal
+    while currentNode != start:
+        try:
+            path.insert(0, currentNode)
+            currentNode = predecessor[currentNode]
+        except KeyError:
+            print('Path not reachable')
+            break
+    path.insert(0, start)
+    if shortest_distance[goal] != infinity:
+        print('Shortest distance is ' + str(shortest_distance[goal]))
+        print('And the path is ' + str(path))
+
+"""
 
 graph = build_graph()
-print(shortest_path(graph, '1563','133'))
+"""
+#print(shortest_path(graph, '1563', '1564'))
