@@ -196,6 +196,10 @@ class Graph:
             del self._vertices[v]
         #return v
 
+    def __repr__(self):
+        """TODO: Implementar"""
+        pass
+
     def printG(self):
         '''Mostra o grafo por linhas'''
         print('Grafo orientado:', self._directed)
@@ -237,7 +241,7 @@ def read_csv(filename):
 
         return graph
 
-read_csv("Github1.csv")
+read_csv("Data_Facebook.csv")
 
 """ 5. Implementação de métodos para determinar caminhos mais curtos num grafo """
 
@@ -311,6 +315,5 @@ def dijkstra(graph, start, goal):
 
 """
 
-graph = build_graph()
 """
 #print(shortest_path(graph, '1563', '1564'))
