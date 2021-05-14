@@ -196,12 +196,6 @@ class Graph:
             del self._vertices[v]
         #return v
 
-    '''
-    def __repr__(self):
-        """TODO: Implementar"""
-        pass
-    '''
-
     def __repr__(self):
         """TODO: A Implementar"""
         res = "nodes: "
