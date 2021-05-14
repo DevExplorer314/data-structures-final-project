@@ -8,6 +8,7 @@
 """Modules"""
 import csv
 
+
 """
 Implementação do TAD Grafo numa classe em Python, de acordo com a implementação prática nos exercícios do módulo 7
 3.a) (usando dicionários de vértices e de adjacências) ou 
@@ -142,14 +143,12 @@ class Graph:
         # for undirected graphs, make sure not to double-count edges
         return total if self._directed else total // 2
 
-
     def edges(self):
         '''Devolve o conjunto de todas as arestas do Grafo'''
         result = set()      # avoid double-reporting edges in undirected graph
         for secondary_map in self._vertices.values():
             result.update(secondary_map.values())  # add edges to resulting set
         return result
-
 
     def get_edge(self, u, v):
         '''Devolve a aresta que liga u e v ou None se não forem adjacentes'''
@@ -159,7 +158,6 @@ class Graph:
             if x != v:
                 edge = None
         return edge
-
 
     def degree(self, v, outgoing=True):
         '''quantidade de arestas incidentes no vértice v
@@ -175,7 +173,6 @@ class Graph:
                 if (outgoing and x == v) or (not outgoing and y == v):
                     count += 1
         return count
-
 
     def remove_edge(self, u, v):
         '''Remove a aresta entre u e v '''
@@ -196,28 +193,23 @@ class Graph:
             del self._vertices[v]
         #return v
 
-    def __repr__(self):
-        """TODO: A Implementar"""
-        res = "nodes: "
-        '''
-        for node in self.vertices():
-            res += str(node) + " "
-        res += "\nedges: "
-        '''
-        for edge in self.edges():
-            res += str(edge) + " "
-        return res
-
     def printG(self):
         '''Mostra o grafo por linhas'''
-        print('Grafo orientado:', self._directed)
+        print('Grafo Orientado:', self.is_directed())
+
+        '''Mostra o número de vertices'''
+        print("Número de Vertices: {}".format(graph.vertex_count()))
+
+        '''Mostra o número de arestas'''
+        print("Número de Arestas: {}".format(graph.edge_count()))
+
         for v in self.vertices():
-            print('\nvertex ', v, ' grau_in: ', self.degree(v,False), end=' ')
-            if self._directed:
+            print('\nUser: ', v, ' grau_in: ', self.degree(v, False), end=' ')
+            if self.is_directed():
                 print('grau_out: ', self.degree(v, False))
             for i in self.incident_edges(v):
                 print(' ', i, end=' ')
-            if self._directed:
+            if self.is_directed():
                 for i in self.incident_edges(v, False):
                     print(' ', i, end=' ')
 
@@ -230,8 +222,7 @@ class Graph:
 
 """ 3. Proceda ao Carregamento de dados do ficheiro Github.csv (no e-Learning) """
 def read_csv(filename):
-
-    graph = Graph()
+    info = []
     with open(filename, 'r') as csv_file:
         data = csv.reader(csv_file)
         next(data)
@@ -240,15 +231,27 @@ def read_csv(filename):
             id_origem = linha[0]
             id_destino = linha[1]
             peso = linha[2] if len(linha) > 2 else 1 # None
+            info.append([id_origem, id_destino, peso])
 
-            v_origem = graph.insert_vertex(id_origem)
-            v_destino = graph.insert_vertex(id_destino)
+    return info
 
-            graph.insert_edge(v_origem, v_destino, peso)
+def build_graph():
 
-        return graph
+    csv_data = read_csv(filename)
+    graph = Graph()
 
-read_csv("Data_Facebook.csv")
+    for linha in csv_data:
+        id_origem = linha[0]
+        id_destino = linha[1]
+        peso = linha[2] if len(linha) > 2 else 1  # None
+
+        v_origem = graph.insert_vertex(id_origem)
+        v_destino = graph.insert_vertex(id_destino)
+
+        graph.insert_edge(v_origem, v_destino, peso)
+
+    return graph
+
 
 """ 5. Implementação de métodos para determinar caminhos mais curtos num grafo """
 
@@ -283,44 +286,27 @@ def shortest_path(graph, start, goal):
     return
 
 """ (b) usando os pesos nas arestas"""
-def dijkstra(graph, start, goal):
-    shortest_distance = {}
-    predecessor = {}
-    unseenNodes = graph
-    infinity = 9999999
-    path = []
-    for node in unseenNodes:
-        shortest_distance[node] = infinity
-    shortest_distance[start] = 0
 
-    while unseenNodes:
-        minNode = None
-        for node in unseenNodes:
-            if minNode is None:
-                minNode = node
-            elif shortest_distance[node] < shortest_distance[minNode]:
-                minNode = node
 
-        for childNode, weight in graph[minNode].items():
-            if weight + shortest_distance[minNode] < shortest_distance[childNode]:
-                shortest_distance[childNode] = weight + shortest_distance[minNode]
-                predecessor[childNode] = minNode
-        unseenNodes.pop(minNode)
 
-    currentNode = goal
-    while currentNode != start:
-        try:
-            path.insert(0, currentNode)
-            currentNode = predecessor[currentNode]
-        except KeyError:
-            print('Path not reachable')
-            break
-    path.insert(0, start)
-    if shortest_distance[goal] != infinity:
-        print('Shortest distance is ' + str(shortest_distance[goal]))
-        print('And the path is ' + str(path))
+if __name__ == "__main__":
 
-"""
+    # Ficheiro CSV a ler
+    filename = "Data_Facebook.csv"
 
-"""
-#print(shortest_path(graph, '1563', '1564'))
+    # Criação do grafo
+    graph = build_graph()
+
+    # Print do grafo
+    graph.printG()
+    #shortest_path(graph, "Murray", "Douglas")
+
+
+
+    ## Teste do caminho mais curto sem usar os pesos nas arestas
+    #print("=== Sem usar os pesos nas arestas === ")
+    #shortest_path(graph, "Murray", "Ryan")
+
+    ## Teste do caminho mais curto usando os pesos nas arestas
+    #print("=== Usando os pesos nas arestas ===")
+    #dijkstra(graph, "Murray", "Ryan")
