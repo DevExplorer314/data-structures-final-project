@@ -256,51 +256,22 @@ def build_graph():
 """ 5. Implementação de métodos para determinar caminhos mais curtos num grafo """
 
 """(a) sem usar os pesos nas arestas)"""
-def shortest_path(graph, start, goal):
-    explored = []
-
-    queue = [[start]]
-
-    if start == goal:
-        print("Same Node")
-        return
-
-    while queue:
-        path = queue.pop(0)
-        node = path[-1]
-
-        if node not in explored:
-            neighbours = graph._vertices
-
-            for neighbour in neighbours:
-                new_path = list(path)
-                new_path.append(neighbour)
-                queue.append(new_path)
-
-                if neighbour == goal:
-                    print("Shortest path = ", *new_path)
-                    return
-            explored.append(node)
-
-    print("So sorry, but a connecting path doesn't exist :(")
-    return
 
 """ (b) usando os pesos nas arestas"""
-
 
 
 if __name__ == "__main__":
 
     # Ficheiro CSV a ler
-    filename = "Data_Facebook.csv"
+    filename = "Data_Facebook_TESTE.csv"
 
     # Criação do grafo
     graph = build_graph()
 
     # Print do grafo
-    graph.printG()
-    #shortest_path(graph, "Murray", "Douglas")
+    #graph.printG()
 
+    #shortest_path(graph, "Murray", "Douglas")
 
 
     ## Teste do caminho mais curto sem usar os pesos nas arestas
