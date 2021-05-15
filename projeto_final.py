@@ -7,6 +7,7 @@
 
 """Modules"""
 import csv
+from heap_priority_queue import AdaptableHeapPriorityQueue
 
 
 """
@@ -102,10 +103,22 @@ class Graph:
 
     def insert_vertex(self, x):
         '''Insere e devolve um novo vértice com o elemento x'''
-        v = Vertex(x)
-        self._vertices[v] = {}      # inicializa o dicionário de adjacências a vazio
-        self._number = len(self._vertices)
-        return v
+        if x not in self._vertices.keys():
+            v = Vertex(x)
+            self._vertices[v] = {}      # inicializa o dicionário de adjacências a vazio
+            self._number = len(self._vertices)
+            return v
+    '''
+    def insert_edge(self, u, v, x=None):
+        pares_users = []
+        for e in graph.edges():
+            pares_users.append((e[0], e[1]))
+            pares_users.append((e[1], e[0]))
+        if (u, v) not in pares_users:
+        e = Edge(u, v, x)
+        self._vertices[u][v] = e  # vai colocar nas adjacências de u
+        self._vertices[v][u] = e  # e nas adjacências de v (para facilitar a procura de todos os arcos incidentes)
+    '''
 
     def insert_edge(self, u, v, x=None):
         '''Cria u e v e insere e devolve uma nova aresta entre u e v com peso x'''
@@ -149,6 +162,12 @@ class Graph:
         for secondary_map in self._vertices.values():
             result.update(secondary_map.values())  # add edges to resulting set
         return result
+
+    def return_edges(self):
+        edges_list = []
+        for edge in self.edges():
+            edges_list.append(edge)
+        return edges_list
 
     def get_edge(self, u, v):
         '''Devolve a aresta que liga u e v ou None se não forem adjacentes'''
@@ -221,8 +240,26 @@ class Graph:
 """
 
 """ 3. Proceda ao Carregamento de dados do ficheiro Github.csv (no e-Learning) """
+
+def read_csv2(filename):
+    with open(filename, 'r') as csv_file:
+        data = csv.reader(csv_file)
+        next(data)
+
+        for line in data:
+
+            if line[0] not in graph._vertices.keys():
+                graph._vertices[str(line[0])] = {}
+
+            if line[1] not in graph._vertices.keys():
+                graph._vertices[str(line[1])] = {}
+
+        for edge in data:
+            # depois de criar verificar que não existem edges repetidos
+            graph._vertices[str(edge[0])]
+
 def read_csv(filename):
-    info = []
+
     with open(filename, 'r') as csv_file:
         data = csv.reader(csv_file)
         next(data)
@@ -231,34 +268,100 @@ def read_csv(filename):
             id_origem = linha[0]
             id_destino = linha[1]
             peso = linha[2] if len(linha) > 2 else 1 # None
-            info.append([id_origem, id_destino, peso])
 
-    return info
+            v_origem = graph.insert_vertex(id_origem)
+            v_destino = graph.insert_vertex(id_destino)
 
-def build_graph():
-
-    csv_data = read_csv(filename)
-    graph = Graph()
-
-    for linha in csv_data:
-        id_origem = linha[0]
-        id_destino = linha[1]
-        peso = linha[2] if len(linha) > 2 else 1  # None
-
-        v_origem = graph.insert_vertex(id_origem)
-        v_destino = graph.insert_vertex(id_destino)
-
-        graph.insert_edge(v_origem, v_destino, peso)
-
-    return graph
-
+            graph.insert_edge(v_origem, v_destino, peso)
 
 """ 5. Implementação de métodos para determinar caminhos mais curtos num grafo """
 
 """(a) sem usar os pesos nas arestas)"""
+def find_shortest_path(graph, start, end, path = []):
+        path = path + [start]
+        if start == end:
+            return path
+        shortest = None
+        for node in graph[start]:
+            if node not in path:
+                newpath = find_shortest_path(graph, node, end, path)
+                if newpath:
+                    if not shortest or len(newpath) < len(shortest):
+                        shortest = newpath
+        return shortest
+
 
 """ (b) usando os pesos nas arestas"""
+def dijkstra_path(grafo, origem, fim):  # retorna a menor distancia de um No origem até um No destino e o caminho até ele
 
+    controle = {}
+    distanciaAtual = {}
+    noAtual = {}
+    naoVisitados = []
+    atual = origem
+    noAtual[atual] = 0
+
+    for vertice in grafo.keys():
+        naoVisitados.append(vertice)  # inclui os vertices nos não visitados
+        distanciaAtual[vertice] = float('inf')  # inicia os vertices como infinito
+
+    distanciaAtual[atual] = [0, origem]
+
+    naoVisitados.remove(vertice)
+
+    while naoVisitados:
+        for vizinho, peso in grafo[atual].items():
+            pesoCalc = peso + noAtual[atual]
+            if distanciaAtual[vizinho] == float("inf") or distanciaAtual[vizinho][0] > pesoCalc:
+                distanciaAtual[vizinho] = [pesoCalc, atual]
+                controle[vizinho] = pesoCalc
+                print(controle)
+
+        if controle == {}: break
+        minVizinho = min(controle.items(), key=lambda x: x[1])  # seleciona o menor vizinho
+        atual = minVizinho[0]
+        noAtual[atual] = minVizinho[1]
+        naoVisitados.remove(atual)
+        del controle[atual]
+
+    print("A menor distância de %s atá %s é: %s" % (origem, fim, distanciaAtual[fim][0]))
+    print("O menor caminho é: %s" % printPath(distanciaAtual, origem, fim))
+
+
+def dijkstra(grafo, origem):  # retorna a menor distancia de um dado nó para todos os outros possíveis.
+
+    controle = {}
+    distanciaAtual = {}
+    noAtual = {}
+    naoVisitados = []
+    atual = origem
+    noAtual[atual] = 0
+
+    a = grafo.vertices()
+
+    for vertice in a:
+        naoVisitados.append(vertice)  # inclui os vertices nos não visitados
+        distanciaAtual[vertice] = float('inf')  # inicia os vertices como infinito
+
+    distanciaAtual[atual] = 0
+
+    naoVisitados.pop(atual)
+
+    while naoVisitados:
+        for vizinho, peso in grafo[atual].items():
+            pesoCalc = peso + noAtual[atual]
+            if distanciaAtual[vizinho] == float("inf") or distanciaAtual[vizinho] > pesoCalc:
+                distanciaAtual[vizinho] = pesoCalc
+                controle[vizinho] = distanciaAtual[vizinho]
+
+        if controle == {}: break
+        minVizinho = min(controle.items(), key=lambda x: x[1])  # seleciona o menor vizinho
+        atual = minVizinho[0]
+        noAtual[atual] = minVizinho[1]
+        naoVisitados.remove(atual)
+        del controle[atual]
+
+    print(distanciaAtual)
 
 if __name__ == "__main__":
 
@@ -266,13 +369,28 @@ if __name__ == "__main__":
     filename = "Data_Facebook_TESTE.csv"
 
     # Criação do grafo
-    graph = build_graph()
+    graph = Graph()
+    read_csv2(filename)
+
+    '''
+    graph.insert_vertex(1)
+    graph.insert_vertex(2)
+    graph.insert_vertex(3)
+
+    graph.insert_edge(1, 2)
+    graph.insert_edge(2, 3)
+    '''
+
+    #read_csv(filename)
+
 
     # Print do grafo
     #graph.printG()
 
-    #shortest_path(graph, "Murray", "Douglas")
-
+    #shortest_path_lengths("Lynch")
+    #print(find_shortest_path(graph, "Pereira", "Acosta"))
+    #dijkstra_path(graph, "Pereira", "Acosta")
+    #dijkstra(graph, "Pereira")
 
     ## Teste do caminho mais curto sem usar os pesos nas arestas
     #print("=== Sem usar os pesos nas arestas === ")
