@@ -7,6 +7,9 @@
 
 """Modules"""
 import csv
+import math
+from priorityQueue import PriorityQueue
+#from dijkstra import Dijkstra
 
 """
 Implementação do TAD Grafo numa classe em Python, de acordo com a implementação prática nos exercícios do módulo 7
@@ -101,9 +104,10 @@ class Graph:
         Create an empty graph (undirected, by default).
         Graph is directed if optional paramter is set to True.
         '''
-
         self._outgoing = {}
         self._incoming = {} if directed else self._outgoing
+        self.edges = dict()
+        self.nodes = set()
 
     def __getitem__(self, arg):
         return self._incoming[arg]
@@ -236,9 +240,10 @@ class Graph:
 
         self._outgoing[u][v] = e
         self._incoming[v][u] = e
+
         return e
 
-    def delete_edge(self, u, v):
+    def remove_edge(self, u, v):
         if not self.get_edge(u, v):
             # exception for trying to delete non-existent edge
             # can be handled from class user
@@ -251,7 +256,7 @@ class Graph:
 
         return None
 
-    def delete_vertex(self, x):
+    def remove_vertex(self, x):
         '''
         Delete vertex and all its adjacent edges from graph
         '''
@@ -322,39 +327,50 @@ def read_csv(filename):
 """(a) sem usar os pesos nas arestas)"""
 
 """ (b) usando os pesos nas arestas"""
+def Dijkstra(G, w, start_vertex):
+    '''
+    Implementation of dijkstra algorithms
+    for computing shortest paths on directed graphs with positive weights.
+    Reports detection of negative cycle if one exists.
+    Inputs:
+    [G]: graph.Graph object of graph representation
+    [w]: weight mapping of edges
+    [start_vertex]: the source to which shortest paths will be computed
+                    its a graph.Vertex instance of G.
+    Outputs:
+    [distance_est]: mapping of vertices to the length of the shortes path
+                    with start_vertex as source i.e. = d(start_vertex, v)
+    [spt_predecessor]: mapping of vertice to their predecessor
+                       in the shortest path tree with root start_vertex
 
+    '''
+    distance_est = {vertex: math.inf for vertex in G.vertices()}
+    distance_est[start_vertex] = 0
+    p_queue = PriorityQueue()
+    spt_predecessor = {vertex: None for vertex in G.vertices()}
 
-def dijkstra_path(grafo, origem, fim):  # retorna a menor distancia de um No origem até um No destino e o caminho até ele
+    p_queue.add(start_vertex, distance_est[start_vertex])
 
-    controle = {}
-    distanciaAtual = {}
-    noAtual = {}
-    naoVisitados = []
-    atual = origem
-    noAtual[atual] = 0
+    while True:
+        try:
+            source = p_queue.pop()
+        except KeyError:
+            # when the queue is empty either we have examined all
+            # vertices or there are no others reachable from start_vertex
+            break
 
-    for vertice in G.vertices():
-        naoVisitados.append(vertice)  # inclui os vertices nos não visitados
-        distanciaAtual[vertice] = float('inf')  # inicia os vertices como infinito
+        for edge in G.incident_edges(source, outgoing=True):
+            destination = edge.opposite(source)
+            if distance_est[destination] > distance_est[source] + w[edge]:
+                # relaxation step
+                distance_est[destination] = distance_est[source] + w[edge]
+                # if vertex already in queue then priority is updated
+                p_queue.add(destination, distance_est[destination])
+                # update the predecessor also
+                spt_predecessor[destination] = source
 
-    distanciaAtual[atual] = [0, origem]
+    return distance_est, spt_predecessor
 
-    naoVisitados.remove(atual)
-
-    while naoVisitados:
-        for vizinho, peso in grafo[atual].items():
-            pesoCalc = peso + noAtual[atual]
-            if distanciaAtual[vizinho] == float("inf") or distanciaAtual[vizinho][0] > pesoCalc:
-                distanciaAtual[vizinho] = [pesoCalc, atual]
-                controle[vizinho] = pesoCalc
-                print(controle)
-
-        if controle == {}: break
-        minVizinho = min(controle.items(), key=lambda x: x[1])  # seleciona o menor vizinho
-        atual = minVizinho[0]
-        noAtual[atual] = minVizinho[1]
-        naoVisitados.remove(atual)
-        del controle[atual]
 
 if __name__ == "__main__":
 
@@ -364,6 +380,9 @@ if __name__ == "__main__":
     # Criação do objeto grafo
     G = read_csv(filename)
 
-    dijkstra_path(G, "Lynch", "Arnold")
+    Dijkstra(G, "Lynch", "Pereira")
+    #Dijkstra(G, "Lynch", "Arnold")
+
+    #dijkstra_path(G, "Lynch", "Arnold")
     # Print do grafo
     #G.printG()
