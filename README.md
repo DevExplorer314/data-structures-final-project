@@ -42,3 +42,10 @@ https://www.youtube.com/watch?v=Ub4-nG09PFw
 
 * Desenvolver o código para os métodos **degree_centrality()** e **closeness_centrality()** referentes à alínea 6
 
+**22/05/2021**
+
+* Implementado o método **degree_centrality()** referente à alínea 6
+
+**Next Steps:**
+
+* Desenvolver o código para o método **closeness_centrality()** referente à alínea 6 e o método de Dijkstra referente ao ponto 5 alínea b)
