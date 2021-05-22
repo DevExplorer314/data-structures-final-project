@@ -7,9 +7,9 @@
 
 """Modules"""
 import csv
-import math
-from priorityQueue import PriorityQueue
-#from dijkstra import Dijkstra
+import networkx as nx
+
+from heap_priority_queue import AdaptableHeapPriorityQueue
 
 """
 Implementação do TAD Grafo numa classe em Python, de acordo com a implementação prática nos exercícios do módulo 7
@@ -17,6 +17,7 @@ Implementação do TAD Grafo numa classe em Python, de acordo com a implementa
 3.b) (um dicionário de vértices e uma estrutura de lista ligada para as adjacências implementada pelo grupo). 
 Devem usar a interface e as classes Vertex e Edge, como indicado na aula.
 """
+
 
 class Graph:
     '''
@@ -49,10 +50,15 @@ class Graph:
             '''
             will allow vertex to be a map/set key
             '''
-            return hash(id(self))
+            return hash(self._element)
 
         def __repr__(self):
             return '{0}'.format(self._element)
+
+        def __eq__(self, other):
+            if isinstance(other, Graph.Vertex):
+                return self._element == other._element
+            return False
 
     # == Class Edge == #
     class Edge:
@@ -91,7 +97,7 @@ class Graph:
             '''
             will allow edge to be a map/set key
             '''
-            return hash(id(self))
+            return hash((self._origin, self._destination))
 
         def __repr__(self):
             if self._weight is None:
@@ -102,12 +108,10 @@ class Graph:
     def __init__(self, directed=False):
         '''
         Create an empty graph (undirected, by default).
-        Graph is directed if optional paramter is set to True.
+        Graph is directed if optional parameter is set to True.
         '''
         self._outgoing = {}
         self._incoming = {} if directed else self._outgoing
-        self.edges = dict()
-        self.nodes = set()
 
     def __getitem__(self, arg):
         return self._incoming[arg]
@@ -208,12 +212,12 @@ class Graph:
         Insert and return a new Vertex with element x
         '''
         for vertex in self.vertices():
-            if (vertex.element() == x):
+            if vertex.element() == x:
                 # raise exception if vertice exists in graph
                 # exception can be handled from the class user
-                raise Exception('Vertice already exists')
+                return vertex
 
-        v = self.Vertex(x)
+        v = self.Vertex(x)  # cria um objeto do tipo Vertex
 
         self._outgoing[v] = {}
         if self.is_directed:
@@ -222,7 +226,6 @@ class Graph:
         return v
 
     def insert_edge(self, u, v, x=None):
-        """TODO: Validar a questão dos duplicados"""
         '''
         Insert and return a new Edge from u to v with auxiliary element x.
         '''
@@ -234,9 +237,10 @@ class Graph:
         if self.get_edge(u, v):
             # no multiple edges
             # exception can be handled from the class user
-            raise Exception('Edge already exists.')
+            e = self.Edge(u, v, x)
+            return e
 
-        e = self.Edge(u, v, x)
+        e = self.Edge(u, v, x)      # cria um objeto do tipo Edge
 
         self._outgoing[u][v] = e
         self._incoming[v][u] = e
@@ -253,8 +257,6 @@ class Graph:
         del u_neighbours[v]
         v_neighbours = self._incoming[v]
         del v_neighbours[u]
-
-        return None
 
     def remove_vertex(self, x):
         '''
@@ -273,7 +275,6 @@ class Graph:
                 del self._outgoing[vertex][x]
         # delete reference to the vertex itself
         del self._outgoing[x]
-        return None
 
     def printG(self):
         '''Mostra o grafo por linhas'''
@@ -304,21 +305,22 @@ class Graph:
 
 """ 3. Proceda ao Carregamento de dados do ficheiro Github.csv (no e-Learning) """
 def read_csv(filename):
+    G = Graph()  # cria um objeto do tipo Graph
 
-    G = Graph()
-
-    with open(filename, 'r') as csv_file:
+    with open(filename, 'r') as csv_file:  # abre o ficheiro csv
         data = csv.reader(csv_file)
+        next(data)  # ignora a primeira coluna do ficheiro
 
-        for linha in data:
-            id_origem = linha[0]
-            id_destino = linha[1]
-            peso = linha[2] if len(linha) > 2 else 1 # None
+        for linha in data:  # por cada linha no ficheiro
+            id_origem = linha[0]  # a origem é a primeira coluna do ficheiro
+            id_destino = linha[1]  # o destino é a segunda coluna do ficheiro
+            peso = linha[2] if len(linha) > 2 else 1       # se não existir uma terceira coluna do ficheiro
+                                                           # assume-se que o peso das arestas, é 1
 
-            v_origem = G.insert_vertex(id_origem)
-            v_destino = G.insert_vertex(id_destino)
+            v_origem = G.insert_vertex(id_origem)  # insere o vertex no grafo
+            v_destino = G.insert_vertex(id_destino)  # insere o vertex no grafo
 
-            G.insert_edge(v_origem, v_destino, peso)
+            G.insert_edge(v_origem, v_destino, int(peso))  # insere a aresta no grafo
 
     return G
 
@@ -327,50 +329,87 @@ def read_csv(filename):
 """(a) sem usar os pesos nas arestas)"""
 
 """ (b) usando os pesos nas arestas"""
-def Dijkstra(G, w, start_vertex):
-    '''
-    Implementation of dijkstra algorithms
-    for computing shortest paths on directed graphs with positive weights.
-    Reports detection of negative cycle if one exists.
-    Inputs:
-    [G]: graph.Graph object of graph representation
-    [w]: weight mapping of edges
-    [start_vertex]: the source to which shortest paths will be computed
-                    its a graph.Vertex instance of G.
-    Outputs:
-    [distance_est]: mapping of vertices to the length of the shortes path
-                    with start_vertex as source i.e. = d(start_vertex, v)
-    [spt_predecessor]: mapping of vertice to their predecessor
-                       in the shortest path tree with root start_vertex
+def shortest_path_lengths(g, src):
 
-    '''
-    distance_est = {vertex: math.inf for vertex in G.vertices()}
-    distance_est[start_vertex] = 0
-    p_queue = PriorityQueue()
-    spt_predecessor = {vertex: None for vertex in G.vertices()}
+    d = {}
+    cloud = {}
+    pq = AdaptableHeapPriorityQueue()
+    pqlocator = {}
+    source = Graph.Vertex(src)
 
-    p_queue.add(start_vertex, distance_est[start_vertex])
+    for v in G.vertices():
+        if v is source:
+            print(v is source)
+            d[v] = 0
+        else:
+            d[v] = float('inf')
+            pqlocator[v] = pq.add(d[v], v)
 
-    while True:
-        try:
-            source = p_queue.pop()
-        except KeyError:
-            # when the queue is empty either we have examined all
-            # vertices or there are no others reachable from start_vertex
-            break
+    while not pq.is_empty():
+        key, u = pq.remove_min()
+        cloud[u] = key
+        del pqlocator[u]
+        for e in G.incident_edges(u):
+            v = e.opposite(u)
+            if v not in cloud:
+                wgt = e.element()
+                if d[u] + wgt < d[v]:
+                   d[v] = d[u] + wgt
+                   pq.update(pqlocator[v], d[v], v)
 
-        for edge in G.incident_edges(source, outgoing=True):
-            destination = edge.opposite(source)
-            if distance_est[destination] > distance_est[source] + w[edge]:
-                # relaxation step
-                distance_est[destination] = distance_est[source] + w[edge]
-                # if vertex already in queue then priority is updated
-                p_queue.add(destination, distance_est[destination])
-                # update the predecessor also
-                spt_predecessor[destination] = source
+    return cloud
 
-    return distance_est, spt_predecessor
 
+""" 6. Implementação, pelo menos, das medidas de centralidade: centralidade de grau (degree centrality) e centralidade de proximidade
+(closeness). """
+
+def degree_centrality(G):
+    '''Centralidade de grau'''
+    degrees = {}
+    vertex_count = G.vertex_count()     # número de vertices do grafo
+
+    for v in G.vertices():      # Percorre os vertices no grafo
+        vertex_degree = G.degree(G.get_vertex(str(v)))     # Calcula o grau de cada vertice
+        formula = vertex_degree / (vertex_count - 1)       # Formula para calcular o grau de centralidade
+        degrees[v] = formula      # Adiciona ao dicionário um par de {key: value}, onde a key é o vertice e o value é o grau de centralidade desse vertice
+    print(degrees)
+
+def distances(G, x):
+    '''Centralidade de proximidade'''
+
+    # 1. init: set up the dictionary and a queue
+    dists = {y: None for y in G}
+    Q = AdaptableHeapPriorityQueue()
+    dists[x] = 0
+    Q.add(x)
+
+    # 2. loop
+    while not Q.is_empty():
+        y = Q.remove()
+
+    for z in G.insert_vertex(y):
+        if dists[z] is None:
+            dists[z] = dists[y] + 1
+    Q.add(z)
+
+    # 3. stop here
+    return dists
+
+def centrality_degree():
+    pass
+
+def draw_graph(grafo, show_metrics=False, show_plot=False):
+    '''TODO: Desenhar a rede'''
+    nx_graph = nx.Graph(directed=grafo.is_directed())
+    for e in grafo.edges():
+        nx_graph.add_edge(e.origin, e.destination, weight=e.element)
+
+    nx.degree_centrality(nx_graph)
+
+    if show_metrics:
+        print("degree centrality", nx.degree_centrality(nx_graph))
+        print("closeness centrality", nx.closeness_centrality(nx_graph))
+        print("betweenness centrality", nx.betweenness_centrality(nx_graph))
 
 if __name__ == "__main__":
 
@@ -380,9 +419,19 @@ if __name__ == "__main__":
     # Criação do objeto grafo
     G = read_csv(filename)
 
-    Dijkstra(G, "Lynch", "Pereira")
-    #Dijkstra(G, "Lynch", "Arnold")
+    # Calcular o grau de centralidade de cada vértice
+    # degree_centrality(G)
 
-    #dijkstra_path(G, "Lynch", "Arnold")
+    shortest_path_lengths(G, "Abraham")
+
+    # Remove um Vertex
+    # G.remove_vertex(G.get_vertex("Abraham"))
+
+    # Remove um Edge
+    #G.remove_edge("Abrams", "Pereira")
+
+    # Shortest path
+    # shortest_path_lengths(G, )
+
     # Print do grafo
-    #G.printG()
+    # G.printG()
