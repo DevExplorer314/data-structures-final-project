@@ -276,6 +276,22 @@ class Graph:
         # delete reference to the vertex itself
         del self._outgoing[x]
 
+    def get_weight(self, v, outgoing=True):
+        '''
+        Return all incident edges to node v.
+        If graph is directed, handle the case of incoming edges
+        '''
+        weights = {}
+        queue = AdaptableHeapPriorityQueue()
+        inc = self._outgoing if outgoing else self._incoming
+        if v not in inc:
+            return None
+        for edge in inc[v].values():
+            weights[v] = v
+            weights[v] = queue.add(weights[v], edge.element())
+            #weights.append(edge.element())
+        print(weights)
+
     def printG(self):
         '''Mostra o grafo por linhas'''
         print('Grafo Orientado:', self.is_directed())
@@ -330,7 +346,7 @@ def read_csv(filename):
 
 """ (b) usando os pesos nas arestas"""
 def shortest_path_lengths(g, src):
-
+    '''Aplicação do algoritmo de Dijkstra'''
     d = {}
     cloud = {}
     pq = AdaptableHeapPriorityQueue()
@@ -338,12 +354,11 @@ def shortest_path_lengths(g, src):
     source = Graph.Vertex(src)
 
     for v in G.vertices():
-        if v is source:
-            print(v is source)
+        if v == source:
             d[v] = 0
         else:
             d[v] = float('inf')
-            pqlocator[v] = pq.add(d[v], v)
+        pqlocator[v] = pq.add(d[v], v)
 
     while not pq.is_empty():
         key, u = pq.remove_min()
@@ -371,32 +386,24 @@ def degree_centrality(G):
     for v in G.vertices():      # Percorre os vertices no grafo
         vertex_degree = G.degree(G.get_vertex(str(v)))     # Calcula o grau de cada vertice
         formula = vertex_degree / (vertex_count - 1)       # Formula para calcular o grau de centralidade
-        degrees[v] = formula      # Adiciona ao dicionário um par de {key: value}, onde a key é o vertice e o value é o grau de centralidade desse vertice
+        degrees[v] = round(formula, 2)      # Adiciona ao dicionário um par de {key: value}, onde a key é o vertice e o value é o grau de centralidade desse vertice
     print(degrees)
 
-def distances(G, x):
+def closeness_centrality(G):
     '''Centralidade de proximidade'''
+    '''
+    d = {}
+    path = {}
+    vertex_count = G.vertex_count()  # número de vertices do grafo
 
-    # 1. init: set up the dictionary and a queue
-    dists = {y: None for y in G}
-    Q = AdaptableHeapPriorityQueue()
-    dists[x] = 0
-    Q.add(x)
-
-    # 2. loop
-    while not Q.is_empty():
-        y = Q.remove()
-
-    for z in G.insert_vertex(y):
-        if dists[z] is None:
-            dists[z] = dists[y] + 1
-    Q.add(z)
-
-    # 3. stop here
-    return dists
-
-def centrality_degree():
-    pass
+    for v in G.vertices():       # Percorre os vertices no grafo
+        adj = G.incident_edges(v)
+        weight = adj.element
+        path = shortest_path_lengths(G, v)
+        #sum_path = sum(path.keys())
+        #formula =  (vertex_count - 1) / # incompleto
+        print(weight)
+    '''
 
 def draw_graph(grafo, show_metrics=False, show_plot=False):
     '''TODO: Desenhar a rede'''
@@ -435,3 +442,4 @@ if __name__ == "__main__":
 
     # Print do grafo
     # G.printG()
+
