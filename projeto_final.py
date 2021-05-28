@@ -9,7 +9,7 @@
 import csv
 import networkx as nx
 
-from heap_priority_queue import AdaptableHeapPriorityQueue
+from Grupo_A2_heap_queue import AdaptableHeapPriorityQueue
 
 """
 Implementação do TAD Grafo numa classe em Python, de acordo com a implementação prática nos exercícios do módulo 7
@@ -75,7 +75,7 @@ class Graph:
             self._destination = v
             self._weight = x
 
-        def endPoints(self):
+        def endpoints(self):
             '''
             Return (u,v) tuple for vertices u and v.
             '''
@@ -387,49 +387,49 @@ def degree_centrality(G):
         vertex_degree = G.degree(G.get_vertex(str(v)))     # Calcula o grau de cada vertice
         formula = vertex_degree / (vertex_count - 1)       # Formula para calcular o grau de centralidade
         degrees[v] = round(formula, 2)      # Adiciona ao dicionário um par de {key: value}, onde a key é o vertice e o value é o grau de centralidade desse vertice
-    print(degrees)
+    return degrees
 
-def closeness_centrality(G):
+
+def closeness_centrality(G, src=None):
     '''Centralidade de proximidade'''
-    '''
-    d = {}
-    path = {}
-    vertex_count = G.vertex_count()  # número de vertices do grafo
+    distances = []
+    short = shortest_path_lengths(G, src)
+    vertex_number = G.vertex_count()
+    for value in short.values():
+        if value != float('inf'):
+            distances.append(value)
+    soma = sum(distances)
+    if soma != 0:
+        formula = (vertex_number - 1) / soma
+        return formula
+    else:
+        raise Exception("Erro!")
 
-    for v in G.vertices():       # Percorre os vertices no grafo
-        adj = G.incident_edges(v)
-        weight = adj.element
-        path = shortest_path_lengths(G, v)
-        #sum_path = sum(path.keys())
-        #formula =  (vertex_count - 1) / # incompleto
-        print(weight)
-    '''
+"""7. a) O Top 10 dos vértices mais interligados na sua rede."""
+def top_degree_centrality(G):
+    top = []
+    degrees = degree_centrality(G)
+    for key, value in degrees.items():
+        top.append((str(key), value))
+    #return top
+    #print(type(top))
+    return top.sort(key=lambda value:value[1], reverse=True)
 
-def draw_graph(grafo, show_metrics=False, show_plot=False):
-    '''TODO: Desenhar a rede'''
-    nx_graph = nx.Graph(directed=grafo.is_directed())
-    for e in grafo.edges():
-        nx_graph.add_edge(e.origin, e.destination, weight=e.element)
-
-    nx.degree_centrality(nx_graph)
-
-    if show_metrics:
-        print("degree centrality", nx.degree_centrality(nx_graph))
-        print("closeness centrality", nx.closeness_centrality(nx_graph))
-        print("betweenness centrality", nx.betweenness_centrality(nx_graph))
 
 if __name__ == "__main__":
 
     # Ficheiro CSV
-    filename = "Data_Facebook_TESTE.csv"
+    filename = "Data_Facebook_1.csv"
 
     # Criação do objeto grafo
     G = read_csv(filename)
 
+    # centrality_degree(G, "Carlos")
+
     # Calcular o grau de centralidade de cada vértice
     # degree_centrality(G)
 
-    shortest_path_lengths(G, "Abraham")
+    #shortest_path_lengths(G, "Abraham")
 
     # Remove um Vertex
     # G.remove_vertex(G.get_vertex("Abraham"))
@@ -442,4 +442,3 @@ if __name__ == "__main__":
 
     # Print do grafo
     # G.printG()
-
