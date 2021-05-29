@@ -342,17 +342,14 @@ def read_csv(filename):
 
 """ 5. Implementação de métodos para determinar caminhos mais curtos num grafo """
 
-"""(a) sem usar os pesos nas arestas)"""
-
 """ (b) usando os pesos nas arestas"""
-def shortest_path_lengths(g, src):
+def shortest_path_lengths(G, src):
     '''Aplicação do algoritmo de Dijkstra'''
     d = {}
     cloud = {}
     pq = AdaptableHeapPriorityQueue()
     pqlocator = {}
     source = Graph.Vertex(src)
-
     for v in G.vertices():
         if v == source:
             d[v] = 0
@@ -405,16 +402,58 @@ def closeness_centrality(G, src=None):
     else:
         raise Exception("Erro!")
 
+def sort_tuple(tup):
+    '''Função para ordenar a lista de tuplos pelo seu segundo item'''
+    lst = len(tup)
+    for i in range(0, lst):
+
+        for j in range(0, lst - i - 1):
+            if tup[j][1] < tup[j + 1][1]:
+                temp = tup[j]
+                tup[j] = tup[j + 1]
+                tup[j + 1] = temp
+    return tup
+
 """7. a) O Top 10 dos vértices mais interligados na sua rede."""
 def top_degree_centrality(G):
     top = []
     degrees = degree_centrality(G)
     for key, value in degrees.items():
         top.append((str(key), value))
-    #return top
-    #print(type(top))
-    return top.sort(key=lambda value:value[1], reverse=True)
+    return sort_tuple(top[:10])
 
+
+"""7. b) O Top 10 dos vértices que apresentam maior proximidade aos restantes."""
+def top_closeness(G):
+    top = []
+    for v in G.vertices():
+        d = closeness_centrality(G, str(v))
+        top.append((v, round(d, 2)))
+    return sort_tuple(top[:10])
+
+
+def DFS(graph, start, dest):
+    stack = list()
+    visited = list()
+    s = Graph.Vertex(start)
+    d = Graph.Vertex(dest)
+    stack.append(s)
+    visited.append(s)
+    print('Visited', s)
+    result = ["Not reachable", list()]
+    while stack:
+        node = stack.pop()
+        if node == d:
+            print('Destination node found', node)
+            result[0] = 'Reachable'
+            break
+        print(node,'Is not a destination node')
+        for child in graph[node]:
+            if child not in visited:
+                visited.append(child)
+                stack.append(child)
+    result[1] = visited
+    return result
 
 if __name__ == "__main__":
 
@@ -424,6 +463,12 @@ if __name__ == "__main__":
     # Criação do objeto grafo
     G = read_csv(filename)
 
+    #top_degree_centrality(G)
+
+    #top_closeness(G)
+
+    #shortestPathBFS(G, "Murphy", "Bradley")
+    #shortestPathBFS(G, "Murphy", "Murphy")
     # centrality_degree(G, "Carlos")
 
     # Calcular o grau de centralidade de cada vértice
