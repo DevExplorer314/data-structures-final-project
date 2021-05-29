@@ -136,13 +136,13 @@ class Graph:
 
         return self._outgoing.keys()
 
-    def get_vertex(self, el):
+    def get_vertex(self, x):
         '''
         Return the graph's vertex with corresponding element
         equal to el. Return None on failure
         '''
         for vertex in self.vertices():
-            if vertex.element() == el:
+            if vertex.element() == x:
                 return vertex
 
         return None
@@ -325,13 +325,13 @@ def read_csv(filename):
 
     with open(filename, 'r') as csv_file:  # abre o ficheiro csv
         data = csv.reader(csv_file)
-        next(data)  # ignora a primeira coluna do ficheiro
+        next(data)  # ignora a primeira linha do ficheiro
 
         for linha in data:  # por cada linha no ficheiro
             id_origem = linha[0]  # a origem é a primeira coluna do ficheiro
             id_destino = linha[1]  # o destino é a segunda coluna do ficheiro
             peso = linha[2] if len(linha) > 2 else 1       # se não existir uma terceira coluna do ficheiro
-                                                           # assume-se que o peso das arestas, é 1
+                                                           # assume-se que o peso das arestas é 1
 
             v_origem = G.insert_vertex(id_origem)  # insere o vertex no grafo
             v_destino = G.insert_vertex(id_destino)  # insere o vertex no grafo
@@ -387,7 +387,7 @@ def degree_centrality(G):
     return degrees
 
 
-def closeness_centrality(G, src=None):
+def closeness_centrality(G, src):
     '''Centralidade de proximidade'''
     distances = []
     short = shortest_path_lengths(G, src)
@@ -458,10 +458,12 @@ def DFS(graph, start, dest):
 if __name__ == "__main__":
 
     # Ficheiro CSV
-    filename = "Data_Facebook_1.csv"
+    filename = "Github1.csv"
 
     # Criação do objeto grafo
     G = read_csv(filename)
+
+
 
     #top_degree_centrality(G)
 
